@@ -8,6 +8,11 @@ const validator = new ZSchema({
     assumeAdditional: true
 });
 
+// allows to extend validator with custom formats
+export function addValidationFormat(name, validator) {
+    ZSchema.registerFormat(name, validator);
+}
+
 export default (_chai, _utils) => {
     let { Assertion, config } = _chai;
     let { flag } = _utils;
@@ -19,23 +24,32 @@ export default (_chai, _utils) => {
         let endpoint, status;
         const response = asserter._obj;
         const negate = flag(asserter, "negate");
+        let contentType = (typeof response.headers.get) === "function" ? response.headers.get("content-type") : response.headers["content-type"];
+        // there is charset suffix may be present in content-type header,
+        // i.e. application/json; charset=utf-8,
+        // but in spec we use clean content type only
+        if (contentType && ~contentType.indexOf(";")) {
+            contentType = contentType.split(";")[0].trim();
+        }
 
         // when in negated chain (flag "negated"), we still want to make certain assertions (content-type, status) to not fail
         const invertWhenNegated = (test) => (negate ? !test : test);
 
         let promise = swaggerParser.validate(schema)
             .then((api) => {
-                const contentType = (typeof response.headers.get) === "function" ? response.headers.get("content-type") : response.headers["content-type"];
                 endpoint = api.paths[path][method];
                 status = response.status;
 
-                asserter.assert(
-                    invertWhenNegated(endpoint.produces.reduce((found, produce) => found || produce.includes(contentType) || contentType.includes(produce), false)),
-                    "expected response #{this} to be of content-type #{exp} but got #{act}",
-                    "expected response #{this} not to be of content-type #{exp} but got #{act}",
-                    endpoint.produces,
-                    contentType
-                );
+                // produces may not exists in openapi spec
+                if (endpoint.produces) {
+                    asserter.assert(
+                        invertWhenNegated(endpoint.produces.reduce((found, produce) => found || produce.includes(contentType) || contentType.includes(produce), false)),
+                        "expected response #{this} to be of content-type #{exp} but got #{act}",
+                        "expected response #{this} not to be of content-type #{exp} but got #{act}",
+                        endpoint.produces,
+                        contentType
+                    );
+                }
                 asserter.assert(
                     invertWhenNegated(endpoint.responses[status] !== undefined),
                     "expected schema to have a status code #{exp} but got #{act}",
@@ -46,7 +60,12 @@ export default (_chai, _utils) => {
 
                 return (typeof response.json === "function") ? response.json() : response.body;
             })
-            .then((json) => validator.validate(json, endpoint.responses[status].schema))
+            .then((json) => {
+                const schema = (endpoint.responses[status].content && contentType)
+                    ? endpoint.responses[status].content[contentType].schema
+                    : endpoint.responses[status].schema;
+                validator.validate(json, schema || {});
+            })
             .then(() => {
                 asserter.assert(
                     validator.getLastErrors() === undefined,
