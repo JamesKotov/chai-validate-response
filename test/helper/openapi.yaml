@@ -81,6 +81,26 @@ paths:
         description: Inventory item to add
 
   /inventory/{id}:
+    get:
+      tags:
+        - developers
+      summary: Returns full item description
+      operationId: getItem
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: '507f191e810c19729de860ea'
+          description: Item id
+      responses:
+        '200':
+          description: Requested landing description
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LandingFull'
     delete:
       tags:
         - admins
@@ -122,6 +142,25 @@ components:
           example: '2016-08-29T09:12:33.001Z'
         manufacturer:
           $ref: '#/components/schemas/Manufacturer'
+    InventoryItemShort:
+      type: object
+      required:
+        - id
+        - name
+        - manufacturer
+        - releaseDate
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        name:
+          type: string
+          example: Widget Adapter
+        releaseDate:
+          type: string
+          format: date-time
+          example: '2016-08-29T09:12:33.001Z'
     Manufacturer:
       required:
         - name
@@ -145,3 +184,10 @@ components:
           format: xstring
           example: 'xxx'
       type: object
+    LandingFull:
+      allOf:
+        - $ref: '#/components/schemas/InventoryItemShort'
+        - type: object
+          properties:
+            manufacturer:
+              $ref: '#/components/schemas/Manufacturer'

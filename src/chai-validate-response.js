@@ -2,6 +2,7 @@
 
 import ZSchema from "z-schema";
 import swaggerParser from "swagger-parser";
+import resolveAllOf from  "json-schema-resolve-allof";
 
 const validator = new ZSchema({
     breakOnFirstError: false,
@@ -64,7 +65,7 @@ export default (_chai, _utils) => {
                 const schema = (endpoint.responses[status].content && contentType)
                     ? endpoint.responses[status].content[contentType].schema
                     : endpoint.responses[status].schema;
-                validator.validate(json, schema || {});
+                validator.validate(json, resolveAllOf(schema || {}));
             })
             .then(() => {
                 asserter.assert(
