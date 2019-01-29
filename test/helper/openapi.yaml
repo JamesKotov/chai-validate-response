@@ -79,6 +79,26 @@ paths:
             schema:
               $ref: '#/components/schemas/InventoryItem'
         description: Inventory item to add
+
+  /inventory/{id}:
+    delete:
+      tags:
+        - admins
+      summary: Deletes  an inventory item
+      operationId: deleteInventory
+      description: Delete  an item from the system
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            example: '507f191e810c19729de860ea'
+          description: Item id
+      responses:
+        '204':
+          description: Item deleted
+
 components:
   schemas:
     InventoryItem:

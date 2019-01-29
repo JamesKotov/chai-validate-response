@@ -89,6 +89,11 @@ describe("chai-validate-response", () => {
             expect(response).to.be.a.validResponse(openapiSchemaPath, "/inventory", "get").andNotifyWhen(done);
         });
 
+        it("should supports openapi 3.0 schema with 204 code for response validation", (done) => {
+            const response = generateJsonResponse("", 204);
+            expect(response).to.be.a.validResponse(openapiSchemaPath, "/inventory/{id}", "delete").andNotifyWhen(done);
+        });
+
     });
 
 });
