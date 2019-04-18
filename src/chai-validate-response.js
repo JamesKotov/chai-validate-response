@@ -59,6 +59,10 @@ export default (_chai, _utils) => {
                     status
                 );
 
+                if (contentType.substr(0, 5) === "text/" && response.text) {
+                    return response.text;
+                }
+
                 return (typeof response.json === "function") ? response.json() : response.body;
             })
             .then((json) => {
