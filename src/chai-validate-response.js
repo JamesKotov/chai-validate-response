@@ -59,7 +59,7 @@ export default (_chai, _utils) => {
                     status
                 );
 
-                if (contentType.substr(0, 5) === "text/" && response.text) {
+                if (contentType && contentType.substr(0, 5) === "text/" && response.text) {
                     return response.text;
                 }
 
