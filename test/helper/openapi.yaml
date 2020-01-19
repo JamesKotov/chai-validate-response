@@ -18,6 +18,52 @@ tags:
   - name: developers
     description: Operations available to regular developers
 paths:
+  /categories:
+    get:
+      tags:
+        - v1
+        - marketplace
+      summary: get categories of services
+      description: get categories of services
+      operationId: categoryList
+      parameters:
+        - name: user_id
+          in: header
+          required: true
+          style: simple
+          explode: false
+          schema:
+            type: string
+            format: uuid
+            example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        - name: region
+          in: query
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: string
+            format: uuid
+            example: d290f1ee-6c54-4b01-90e6-d701748f0851
+      responses:
+        200:
+          description: request operation succesfull
+          headers:
+            user_id:
+              style: simple
+              explode: false
+              schema:
+                type: string
+                format: uuid
+                example: d290f1ee-6c54-4b01-90e6-d701748f0851
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/categories'
+        500:
+          description: server error
+        400:
+          description: request error
   /inventory:
     get:
       tags:
@@ -121,6 +167,57 @@ paths:
 
 components:
   schemas:
+    content:
+      required:
+        - key
+        - title
+        - type
+      type: object
+      properties:
+        key:
+          type: string
+          example: "12345678"
+        title:
+          type: string
+          example: telco
+        type:
+          type: string
+          example: telco
+        logo:
+          type: string
+          format: url
+          example: http://marketpalce.net/logo.jpg
+        values:
+          type: array
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                example: Phone
+    category:
+      type: object
+      properties:
+        category_id:
+          type: string
+          format: uuid
+          example: d290f1ee-6c54-4b01-90e6-d701748f0851
+        title:
+          type: string
+          example: Mobile payments
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/content'
+    categories:
+      required:
+        - categorie
+      type: object
+      properties:
+        categorie:
+          type: array
+          items:
+            $ref: '#/components/schemas/category'
     InventoryItem:
       type: object
       required:

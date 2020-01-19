@@ -110,6 +110,53 @@ describe("chai-validate-response", () => {
             expect(response).to.be.a.validResponse(openapiSchemaPath, "/inventory/{id}", "get").andNotifyWhen(done);
         });
 
+        it("should test for required fields", (done) => {
+            const response = generateJsonResponse({
+                "categorie": [
+                    {
+                        "category_id": "765d2ab2-6fa6-4ca0-baf5-2f0c713fd0f7",
+                        "title": "Услуги",
+                        "content": [
+                            {
+                                "key": "telco",
+                                "title": "telco",
+                                "type": "telco",
+                                "logo": "http://humans.net/logo.jpg",
+                                "values": [
+                                    {
+                                        "value": "Phone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+            expect(response).to.be.a.validResponse(openapiSchemaPath, "/categories", "get").andNotifyWhen(done);
+        });
+
+        it("should fail without for required fields", (done) => {
+            const response = generateJsonResponse({
+                "categorie": [
+                    {
+                        "category_id": "765d2ab2-6fa6-4ca0-baf5-2f0c713fd0f7",
+                        "title": "Услуги",
+                        "content": [
+                            {
+                                "logo": "http://humans.net/logo.jpg",
+                                "values": [
+                                    {
+                                        "value": "Phone"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            });
+            expect(response).not.to.be.a.validResponse(openapiSchemaPath, "/categories", "get").andNotifyWhen(done);
+        });
+
     });
 
 });
