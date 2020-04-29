@@ -20,6 +20,38 @@ export default (_chai, _utils) => {
 
     Object.assign(config, { truncateThreshold: 0 });
 
+    Assertion.addChainableMethod("validResponseBody", function(schema, path, method, status, contentType) {
+        let asserter = this;
+        let endpoint;
+        const response = asserter._obj;
+
+        let promise = swaggerParser.validate(schema)
+            .then((api) => {
+                endpoint = api.paths[path][method];
+
+                if (contentType && contentType.substr(0, 5) === "text/" && response.text) {
+                    return response.text;
+                }
+                return response;
+            })
+            .then((json) => {
+                const schema = (endpoint.responses[status].content && contentType)
+                    ? endpoint.responses[status].content[contentType].schema
+                    : endpoint.responses[status].schema;
+                validator.validate(json, resolveAllOf(schema || {}));
+            })
+            .then(() => {
+                asserter.assert(
+                    validator.getLastErrors() === undefined,
+                    "expected response schema to have no errors but got #{act}",
+                    "expected response schema to have errors but got no errors",
+                    "errors",
+                    validator.getLastErrors()
+                );
+            });
+        asserter._obj.then = promise.then.bind(promise);
+    });
+
     Assertion.addChainableMethod("validResponse", function(schema, path, method) {
         let asserter = this;
         let endpoint, status;

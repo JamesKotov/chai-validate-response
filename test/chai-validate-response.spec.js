@@ -159,4 +159,22 @@ describe("chai-validate-response", () => {
 
     });
 
+    describe("expect(response).to.be.a.validResponseBody(schema, path, method, status, contentType)", () => {
+        it("should validate a valid json response", (done) => {
+            let responseBody = { foo: true };
+
+            expect(responseBody).to.be.a.validResponseBody(schema, "/", "get", 200, "application/json");
+            done();
+        });
+
+
+        it("should validate an invalid json response", (done) => {
+            let responseBody = { foo: null };
+
+            expect(responseBody).not.to.be.a.validResponseBody(schema, "/", "get", 200, "application/json");
+            done();
+        });
+    });
+
+
 });
